@@ -125,16 +125,19 @@ class MainWindow(QMainWindow):
         self.button1 = QPushButton("Print All Symbols")
         self.button2 = QPushButton("Print All Equations")
         self.button3 = QPushButton("Make Dictionary")
+        self.button4 = QPushButton("Show Important Equations")
 
         self.button1.clicked.connect(self.print_all_symbols)
         self.button2.clicked.connect(self.print_all_equations)
         self.button3.clicked.connect(self.make_dict)
+        self.button4.clicked.connect(self.show_important)
 
         layout.addWidget(self.text_area)
         layout.addWidget(self.input_box)
         layout.addWidget(self.button1)
         layout.addWidget(self.button2)
         layout.addWidget(self.button3)
+        layout.addWidget(self.button4)
 
         self.setCentralWidget(central_widget)
 
@@ -149,7 +152,58 @@ class MainWindow(QMainWindow):
             if symbol.name.startswith("EQ"):
                 self.text_area.append(f"Symbol: {symbol.name}")
 
+
+
+    def show_important(self):
+        self.text_area.clear()
+        #selected_equations = ["EQ_AnnualFuelUseUB"]  # Add the equations you want to display here
+        selected_equations = ["EQ_AnnualFuelUseUB", "EQ_CapDevPathLB"]  # Add the equations you want to display here
+        default_level = 1
+        default_lower = -9999999999
+        default_upper = 9999999999
+        for symbol in gdx_data:
+            if symbol.name in selected_equations:
+                self.text_area.append(f"Symbol: {symbol.name}")
+                for values in symbol:
+                    string = str(values)
+                    label, pairs = string.split(':')
+                    pairs_list = pairs.split()
+                    data = {label.strip(): {}}
+                    for pair in pairs_list:
+                        key, value = pair.split('=')
+                        data[label.strip()][key.strip()] = value.strip()
+                    level = float(data[label.strip()].get('level', default_level))
+                    lower = float(data[label.strip()].get('lower', default_lower))
+                    upper = float(data[label.strip()].get('upper', default_upper))
+                    self.text_area.append(f"Key: {label.strip()}")
+                    self.text_area.append(f"Values: {data[label.strip()]}")
+                    redColor = QColor(255, 0, 0)
+                    blackColor = QColor(0, 0, 0)
+                    greenColor = QColor(0, 255, 0)
+                    
+                    if (level == default_level) or (lower == default_lower) or (upper == default_upper):
+                            self.text_area.append("<<<<<<<<<<<<NONE>>>>>>>>>>>>>DEFAULT VALUES TAKEN")
+                    
+                    if lower <= level <= upper:
+                        self.text_area.setTextColor(greenColor)
+                        self.text_area.append("Pass")
+                        self.text_area.setTextColor(blackColor)
+                    else:
+                        self.text_area.setTextColor(redColor)
+                        self.text_area.append("Fail")
+                        self.text_area.setTextColor(blackColor)
+
+
+
+
+
+
+
+
     def make_dict(self):
+        default_level = 1
+        default_lower = -9999999999
+        default_upper = 9999999999
         self.text_area.clear()
         eq_entered = self.input_box.text()
         if eq_entered:
@@ -169,9 +223,14 @@ class MainWindow(QMainWindow):
                             key, value = pair.split('=')
                             data[label.strip()][key.strip()] = value.strip()
 
-                        level = float(data[label.strip()]['level'])
-                        lower = float(data[label.strip()]['lower'])
-                        upper = float(data[label.strip()]['upper'])
+                        #level = float(data[label.strip()]['level'])
+                        #lower = float(data[label.strip()]['lower'])
+                        #upper = float(data[label.strip()]['upper'])
+
+                        #get method assigns the default value to the key if value not stripped above    
+                        level = float(data[label.strip()].get('level', default_level)) 
+                        lower = float(data[label.strip()].get('lower', default_lower))
+                        upper = float(data[label.strip()].get('upper', default_upper))
 
                         self.text_area.append(f"Key: {label.strip()}")
                         self.text_area.append(f"Values: {data[label.strip()]}")
@@ -179,6 +238,9 @@ class MainWindow(QMainWindow):
                         redColor = QColor(255, 0, 0)
                         blackColor = QColor(0, 0, 0)
                         greenColor = QColor(0,255,0)
+
+                        if (level == default_level) or (lower == default_lower) or (upper == default_upper):
+                            self.text_area.append("DEFAULT VALUES TAKEN")
 
                         if lower <= level <= upper:
                             self.text_area.setTextColor(greenColor)
