@@ -157,7 +157,8 @@ class MainWindow(QMainWindow):
     def show_important(self):
         self.text_area.clear()
         #selected_equations = ["EQ_AnnualFuelUseUB"]  # Add the equations you want to display here
-        selected_equations = ["EQ_AnnualFuelUseUB", "EQ_CapDevPathLB"]  # Add the equations you want to display here
+        selected_equations = ["EQ_AnnualFuelUseUB", "EQ_CapDevPathLB", "EQ_PlantInvLBYearlyRegion", "EQ_PlantInvUBGen", "EQ_DemandElec",
+                              "EQ_PlantInvUBIntegralRegion", "EQ_PlantInvUBYearlyRegion", "EQ_RenewableSheddingUB"]  # Add the equations you want to display here
         default_level = 1
         default_lower = -9999999999
         default_upper = 9999999999
