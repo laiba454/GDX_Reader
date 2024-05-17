@@ -27,7 +27,7 @@ def print_all_symbols():
 
 def print_all_equations():
     for symbol in gdx_data:
-        if symbol.name.startswith("EQ"):
+        if symbol.name.startswith("EQ") and symbol.name.startswith("EQ_Cost") not in symbol.name:
             print(f"Symbol: {symbol.name}")
 
     
@@ -144,12 +144,13 @@ class MainWindow(QMainWindow):
     def print_all_symbols(self):
         self.text_area.clear()
         for symbol in gdx_data:
-            self.text_area.append(f"Symbol: {symbol.name}")
+            if "Cost" not in symbol.name:  
+                self.text_area.append(f"Symbol: {symbol.name}")
 
     def print_all_equations(self):
-        self.text_area.clear()
+        self.text_area.clear()              #Cost equations skipped
         for symbol in gdx_data:
-            if symbol.name.startswith("EQ"):
+            if symbol.name.startswith("EQ") and "Cost" not in symbol.name:  
                 self.text_area.append(f"Symbol: {symbol.name}")
 
 
@@ -162,10 +163,19 @@ class MainWindow(QMainWindow):
         default_level = 1
         default_lower = -9999999999
         default_upper = 9999999999
+        default_flag = 0
+        keys_found_flag = 0
+        redColor = QColor(255, 0, 0)
+        blackColor = QColor(0, 0, 0)
+        greenColor = QColor(0, 255, 0)
+
         for symbol in gdx_data:
+            keys_found_flag = 0
             if symbol.name in selected_equations:
                 self.text_area.append(f"Symbol: {symbol.name}")
+
                 for values in symbol:
+                    keys_found_flag = 1
                     string = str(values)
                     label, pairs = string.split(':')
                     pairs_list = pairs.split()
@@ -176,23 +186,34 @@ class MainWindow(QMainWindow):
                     level = float(data[label.strip()].get('level', default_level))
                     lower = float(data[label.strip()].get('lower', default_lower))
                     upper = float(data[label.strip()].get('upper', default_upper))
-                    self.text_area.append(f"Key: {label.strip()}")
-                    self.text_area.append(f"Values: {data[label.strip()]}")
-                    redColor = QColor(255, 0, 0)
-                    blackColor = QColor(0, 0, 0)
-                    greenColor = QColor(0, 255, 0)
-                    
+
                     if (level == default_level) or (lower == default_lower) or (upper == default_upper):
-                            self.text_area.append("<<<<<<<<<<<<NONE>>>>>>>>>>>>>DEFAULT VALUES TAKEN")
+                        default_flag = 1
                     
-                    if lower <= level <= upper:
-                        self.text_area.setTextColor(greenColor)
-                        self.text_area.append("Pass")
-                        self.text_area.setTextColor(blackColor)
-                    else:
+                    if default_flag == 1:
                         self.text_area.setTextColor(redColor)
-                        self.text_area.append("Fail")
+                        self.text_area.append("<<<<<<NONE>>>>>>>")
                         self.text_area.setTextColor(blackColor)
+                        #self.text_area.append("Default Values Taken")
+                        #default_flag = 0
+                    else:
+                        self.text_area.append(f"Key: {label.strip()}")
+                        self.text_area.append(f"Values: {data[label.strip()]}")
+                        
+                        if lower <= level <= upper:
+                            self.text_area.setTextColor(greenColor)
+                            self.text_area.append("Pass")
+                            self.text_area.setTextColor(blackColor)
+                        else:
+                            self.text_area.setTextColor(redColor)
+                            self.text_area.append("Fail")
+                            self.text_area.setTextColor(blackColor)
+                    
+                if keys_found_flag == 0:
+                    #print("error")
+                    self.text_area.setTextColor(redColor)
+                    self.text_area.append("<<No keys found in this symbol>>")
+                    self.text_area.setTextColor(blackColor)
 
 
 
